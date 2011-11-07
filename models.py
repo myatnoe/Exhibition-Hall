@@ -35,7 +35,7 @@ def draw_sphere_texture(radius=6, distance=500):
     q = gluNewQuadric()					# create a sphere model
     
     gluQuadricTexture(q, GL_TRUE)    # Enable Texture Coords For The Quad
-    #gluQuadricOrientation(q, GLU_OUTSIDE)
+    #gluQuadricOrientation(q, GLU_OUTSIDE) # Michelle's testing
     
     glPushMatrix()					# save current transformations
     glRotatef(-90,1,0,0)        
@@ -273,6 +273,7 @@ class sphere():
         gluSphere(q,self.size,self.sections,self.sections)
         glPopMatrix()
     
+
 class pyramid():
     def __init__(self,pos=(0.,0.,0.),rot=(0.,0.,0.),rotSpeed=2,size=6):
         self.rot_x=0.
@@ -296,9 +297,9 @@ class pyramid():
         glRotatef(self.rot_x,1.0,0.0,0.0)
         glRotatef(self.rot_y,0.0,1.0,0.0)
         glRotatef(self.rot_z,0.0,0.0,1.0)
-    
+        
         draw_localAxis()
-    
+        
         glBegin(GL_TRIANGLES)				
         glColor3f(1.0,0.0,0.0)
         glVertex3f( 0.0, self.size, 0.0)		
@@ -313,7 +314,7 @@ class pyramid():
         glVertex3f( self.size,-self.size, self.size)
         glColor3f(0.0,1.0,0.0)	
         glVertex3f( self.size,-self.size, -self.size)
-    
+        
         glColor3f(1.0,0.0,0.0)	
         glVertex3f( 0.0, self.size, 0.0)
         glColor3f(0.0,1.0,0.0)	
@@ -329,6 +330,8 @@ class pyramid():
         glVertex3f(-self.size,-self.size, self.size)
         glEnd()
         glPopMatrix()
+    
+
         
 class cube():
     def __init__(self,pos=(0.,0.,0.),rot=(0.,0.,0.),rotSpeed=2,size=6):
@@ -439,5 +442,8 @@ class camera():
         glTranslatef(self.trn_x,self.trn_y,self.trn_z)
         #print "Cam tran %.2f,%.2f,%.2f"%(self.trn_x, self.trn_y, self.trn_z)
         #print "Cam rot  %.2f,%.2f,%.2f"%(self.rot_x,self.rot_y,self.rot_z)
+    def getLocation(self):
+        return self.trn_x,self.trn_y,self.trn_z
     
     
+

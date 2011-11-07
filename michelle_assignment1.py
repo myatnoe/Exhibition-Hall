@@ -7,112 +7,11 @@ from pyglet import image
 from pyglet.gl import *
 from pyglet.window import key
 from models import grid,camera,draw_localAxis
+from room import Wall, Floor
+from accessory import DisplayStand
+import math
+from math import *
 
-class Cylinder:
-    def __init__(self, radius, height):
-        self.radius = radius
-        self.height = height
-        self.quadObj = gluNewQuadric();
-        self.load_textures()
-    
-    def draw(self):
-        glPushMatrix()
-        #glTexGenfv(GL_S, GL_SPHERE_MAP, .0)
-        #glTexGenfv(GL_T, GL_SPHERE_MAP, .0)
-        glEnable(GL_TEXTURE_GEN_S)
-        glEnable(GL_TEXTURE_GEN_T)
-        glBindTexture(GL_TEXTURE_2D, self.texture.id)
-        glRotatef(-90,1,0,0)
-        gluCylinder(self.quadObj, self.radius, self.radius, self.height, 50,50)
-        gluDisk(self.quadObj, 0, self.radius, 100, 1)
-        glTranslatef(0,0,self.height)
-        gluDisk(self.quadObj, 0, self.radius, 100, 1)
-        glDisable(GL_TEXTURE_GEN_S)
-        glDisable(GL_TEXTURE_GEN_T)
-        glColor3f(1,1,1)
-        glPopMatrix()
-    
-    def load_textures(self):
-        file = os.path.join('img','floor.png')
-        surface = image.load(file)
-        
-        t1 = surface.image_data.create_texture(image.Texture)
-        glBindTexture(GL_TEXTURE_2D, t1.id)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        self.texture = t1
-    
-
-class Wall:
-    def __init__(self,width=100,height=100):
-        self.width = width
-        self.height = height
-        self.load_textures()
-    
-    def draw(self):
-        glBindTexture(GL_TEXTURE_2D, self.texture.id)
-        glBegin(GL_QUADS)
-        glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, 0)
-        glTexCoord2f(self.width/200, 0.0); glVertex3f(self.width, 0,  0)
-        glTexCoord2f(self.width/200, self.height/300); glVertex3f(self.width, self.height, 0)
-        glTexCoord2f(0.0, self.height/300); glVertex3f(0, self.height,  0)
-        glEnd()
-    
-    def load_textures(self):
-		file = os.path.join('img','wall_plain.png')
-		surface = image.load(file)
-		
-		t1 = surface.image_data.create_texture(image.Texture)
-		glBindTexture(GL_TEXTURE_2D, t1.id)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-		self.texture = t1
-    
-
-class Floor:
-	def __init__(self, length, width):
-		self.length = length
-		self.width = width
-		self.load_textures()
-    
-	def draw(self):
-		glBindTexture(GL_TEXTURE_2D, self.texture.id)
-		glBegin(GL_QUADS)
-		glTexCoord2f(0.0, 0.0); glVertex3f(0, 0, self.width)
-		glTexCoord2f(2.0, 0.0); glVertex3f(self.length,0,  self.width)
-		glTexCoord2f(2.0, 2.0); glVertex3f(self.length, 0, 0)
-		glTexCoord2f(0.0, 2.0); glVertex3f(0, 0,  0)
-		glEnd()
-	
-	def load_textures(self):
-		file = os.path.join('img','floor.png')
-		surface = image.load(file)
-		
-		t1 = surface.image_data.create_texture(image.Texture)
-		glBindTexture(GL_TEXTURE_2D, t1.id)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-		self.texture = t1
-	
-
-class Base:
-    def __init__(self, base_radius, top_radius, base_height, top_height):
-        self.base_radius = base_radius
-        self.top_radius = top_radius
-        self.base_height = base_height
-        self.top_height = top_height
-        self.load_textures()
-    
-    def draw(self):
-        pass
-    
-    def load_textures(self):
-        pass
-    
 
 class pygletApp(pyglet.window.Window):
     def __init__(self):
@@ -127,16 +26,16 @@ class pygletApp(pyglet.window.Window):
         LightAmbient  = (GLfloat*4)(0.5, 0.5, 0.5, 1.0)
         LightDiffuse  = (GLfloat*4)(1.0, 1.0, 1.0, 1.0)
         LightPosition = (GLfloat*4)(0.0, 0.0, 2.0, 1.0)
-
+        
         self.wall1 = Wall(600,300)
         self.floor = Floor(600,600)
         
         # Testing
-        self.cy = Cylinder(100,50)
+        self.stand = DisplayStand(20,50)
 		
 		# init
         glEnable(GL_TEXTURE_2D)
-        self.load_textures()
+        #self.load_textures()
         glShadeModel(GL_SMOOTH)
         glClearColor(0.0, 0.0, 0.0, 0.0)
         glClearDepth(1.0)
@@ -147,9 +46,6 @@ class pygletApp(pyglet.window.Window):
         glLightfv( GL_LIGHT1, GL_DIFFUSE, LightDiffuse )
         glLightfv( GL_LIGHT1, GL_POSITION, LightPosition )
         glEnable( GL_LIGHT1 )
-    
-    def load_textures(self):
-        pass
     
     def on_mouse_motion(self,x, y, dx, dy):
         self.camera.rot_y += dx / 4. 
@@ -195,6 +91,7 @@ class pygletApp(pyglet.window.Window):
         self.grid.update(dt)
         
         # TODO: update
+        #self.stand.update()
     
     # your draw function
     def draw(self):
@@ -202,10 +99,53 @@ class pygletApp(pyglet.window.Window):
         glLoadIdentity()
         glEnable(GL_DEPTH_TEST)
         
+        glPushMatrix()
         self.camera.draw()
         #self.grid.draw()
-       
+        cx,cy,cz=self.camera.getLocation()
+    	distance=sqrt(cx*cx+cy*cy+cz*cz)
+        
+        # Wall & Floors
+        self.draw_room()
+        
+        # Objects
+        dis = (self.floor.width/2)*0.75
+        
+        # Object 1
         glPushMatrix()
+        glRotatef(30,0,1,0)
+        glTranslatef(dis,0,0)
+        self.stand.draw(distance)
+        glPopMatrix()
+        
+        # Object 2
+        glPushMatrix()
+        glRotatef(-30, 0,1,0)
+        glTranslatef(dis,0,0)
+        self.stand.draw(distance)
+        glPopMatrix()
+        
+        glPushMatrix()
+        glRotatef(-150, 0,1,0)
+        glTranslatef(dis,0,0)
+        self.stand.draw(distance)
+        glPopMatrix()
+        
+        glPushMatrix()
+        glRotatef(-210, 0,1,0)
+        glTranslatef(dis,0,0)
+        self.stand.draw(distance)
+        glPopMatrix()
+        
+        glPushMatrix()
+        glRotatef(-270, 0,1,0)
+        glTranslatef(dis,0,0)
+        self.stand.draw(distance)
+        glPopMatrix()
+        
+        glPopMatrix() # final POP
+    
+    def draw_room(self):
         
         # ==== FLOOR & WALLS
         glPushMatrix()
@@ -227,15 +167,9 @@ class pygletApp(pyglet.window.Window):
         glRotatef(-90,0,1,0)
         self.wall1.draw()
         glPopMatrix() # Right Wall Pop
-        
-        # Testing
-        glPushMatrix()
-        #self.cy.draw()
-        glPopMatrix()
-        
-        glPopMatrix() # final POP
-        
     
+
+            
 # our application is created using the pygletApp class
 problem_3 = pygletApp()
 
