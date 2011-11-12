@@ -1,17 +1,20 @@
 # SID : 91148
 # Name : Aint Myat Noe @ Michelle
-
+# Git : git@github.com:myatnoe/C316-Assignment1.git
 
 from OpenGL.GLUT import *
 from pyglet import image
 from pyglet.gl import *
 from pyglet.window import key
-from models import grid,camera,draw_localAxis
-from room import Wall, Floor
-from accessory import DisplayStand
+from objects.models import grid,camera,draw_localAxis
+from objects.room import Wall, Floor, Ceiling
+from objects.accessory import DisplayStand
+from objects.rubik import Rubik
+from objects.photo import Monalisa
+from objects.pumpkin import Pumpkin
 import math
 from math import *
-
+from objects.description import Description
 
 class pygletApp(pyglet.window.Window):
     def __init__(self):
@@ -19,7 +22,7 @@ class pygletApp(pyglet.window.Window):
         
         self.set_exclusive_mouse(True)
         self.grid    = grid(size=300)
-        self.camera  = camera(pos=(0., -100., -750.),rot=(0.,0.,0.),window=self)
+        self.camera  = camera(pos=(0., -100., -550.),rot=(0.,0.,0.),window=self,speed=400)
         self.renderMode=GL_FILL
         
         self.light = False
@@ -27,11 +30,22 @@ class pygletApp(pyglet.window.Window):
         LightDiffuse  = (GLfloat*4)(1.0, 1.0, 1.0, 1.0)
         LightPosition = (GLfloat*4)(0.0, 0.0, 2.0, 1.0)
         
-        self.wall1 = Wall(600,300)
+        self.wall = Wall(600,300)
         self.floor = Floor(600,600)
+        self.ceiling = Ceiling(600,600)
         
-        # Testing
+        # Exhibits
+        self.show_des = True
         self.stand = DisplayStand(20,50)
+        self.rubik = Rubik()
+        self.rubik_des = Description(self, "Rubik Cube+Scale with Up & DOWN", 0,0)
+        
+        self.monalisa = Monalisa()
+        self.mona_des = Description(self, "Mona Lisa Ghost+Press 'c' to see the Ghost+Press 'x' to on/off texture")
+        
+        self.pumpkin = Pumpkin(40,40)
+        self.x_rot = self.y_rot = self.z_rot = 0
+        self.scale = 1
 		
 		# init
         glEnable(GL_TEXTURE_2D)
@@ -71,6 +85,17 @@ class pygletApp(pyglet.window.Window):
                 glDisable(GL_LIGHTING)
             else:
                 glEnable(GL_LIGHTING)
+            self.show_des = not self.show_des
+        elif sym == key.UP:
+            if self.scale < 1.5:
+                self.scale += .1
+        elif sym == key.DOWN:
+            if self.scale > 1:
+                self.scale -= .1
+        elif sym == key.C:
+            self.monalisa.change_ghost()
+        elif sym == key.X:
+            self.monalisa.change_see()
     
     # Function that sets the camera to 3D mode           
     def on_resize(self,width, height): 
@@ -91,7 +116,15 @@ class pygletApp(pyglet.window.Window):
         self.grid.update(dt)
         
         # TODO: update
-        #self.stand.update()
+        self.stand.update()
+        
+        self.x_rot += 1
+        self.x_rot %= 360
+        self.y_rot += 1
+        self.y_rot %= 360
+        self.z_rot += 1
+        self.z_rot %= 360
+        
     
     # your draw function
     def draw(self):
@@ -109,67 +142,106 @@ class pygletApp(pyglet.window.Window):
         self.draw_room()
         
         # Objects
+        # All objects will be 'dis' far from the center point of the room
         dis = (self.floor.width/2)*0.75
         
-        # Object 1
-        glPushMatrix()
+        ############ ########### ########### ########### ###########
+        glPushMatrix() # Object 1 push
         glRotatef(30,0,1,0)
         glTranslatef(dis,0,0)
-        self.stand.draw(distance)
-        glPopMatrix()
+        self.stand.draw(distance) # Stand 1
+		
+        glPushMatrix() # Rubik push
+        glTranslatef(0,self.stand.height*1.5,0)
+        glScalef(10*self.scale,10*self.scale,10*self.scale)
+        glRotatef(self.x_rot,1,0,1)
+        self.rubik.draw() # Rubik cube
+        glPopMatrix() # Rubik pop
         
-        # Object 2
-        glPushMatrix()
-        glRotatef(-30, 0,1,0)
-        glTranslatef(dis,0,0)
-        self.stand.draw(distance)
-        glPopMatrix()
+        glPushMatrix() # Rubik description push
+        glTranslatef(0,self.stand.height*1.5,self.stand.width*1.2)
+        glRotatef(-90,0,1,0)
+        glScalef(.2,.2,.2)
+        if self.show_des:
+            self.rubik_des.draw_description()
+        glPopMatrix() # Rubik description pop
+        glPopMatrix() # Rubik pop
         
-        glPushMatrix()
-        glRotatef(-150, 0,1,0)
-        glTranslatef(dis,0,0)
-        self.stand.draw(distance)
-        glPopMatrix()
+        ############ ########### ########### ########### ###########        
+        glPushMatrix() # Pumpkin push
+        glTranslatef(-dis,self.pumpkin.height,0)
+        self.pumpkin.draw() # Pumpkin cube
+        glPopMatrix() # Pumpkin pop
         
-        glPushMatrix()
-        glRotatef(-210, 0,1,0)
-        glTranslatef(dis,0,0)
-        self.stand.draw(distance)
-        glPopMatrix()
+        glPushMatrix() # Pumpkin description push
+        glTranslatef(0,self.stand.height*1.5,self.stand.width*1.2)
+        glRotatef(-90,0,1,0)
+        glScalef(.2,.2,.2)
+        if self.show_des:
+            self.rubik_des.draw_description()
+        glPopMatrix() # Pumpkin description pop
         
+        ############ ########### ########### ########### ###########
         glPushMatrix()
         glRotatef(-270, 0,1,0)
         glTranslatef(dis,0,0)
-        self.stand.draw(distance)
-        glPopMatrix()
+        #self.stand.draw(distance)
+        
+        glPushMatrix() # MonaLisa push
+        glTranslatef(0,self.stand.height*3,0)
+        glRotatef(-90,0,1,0)
+        glScalef(40,40,1)
+        self.monalisa.draw() # MonaLisa
+        glPopMatrix() # MonaLisa pop
+        
+        glPushMatrix() # MonaLisa description push
+        glTranslatef(-10,self.stand.height*1.5,self.stand.width*2)
+        glRotatef(-90,0,1,0)
+        glScalef(.2,.2,.2)
+        if self.show_des:
+            self.mona_des.draw_description()
+        glPopMatrix() # MonaLisa description pop
+        glPopMatrix() # Mona Lisa Pop
         
         glPopMatrix() # final POP
     
     def draw_room(self):
-        
         # ==== FLOOR & WALLS
         glPushMatrix()
         glTranslatef(-300,0,-300)
         self.floor.draw()
-        self.wall1.draw()  # Wall 1
+        self.wall.draw()  # Wall 1
         glPopMatrix()
         
         # ==== WALL Left
         glPushMatrix()
         glTranslatef(-300,0,300)
         glRotatef(90,0,1,0)
-        self.wall1.draw()
+        self.wall.draw()
         glPopMatrix() # Wall 2 pop
         
         # ==== WALL Right
         glPushMatrix()
         glTranslatef(300,0,-300)
         glRotatef(-90,0,1,0)
-        self.wall1.draw()
+        self.wall.draw()
         glPopMatrix() # Right Wall Pop
+        
+        # ==== Ceiling
+        glPushMatrix()
+        glTranslatef(-300,300,-300)
+        self.ceiling.draw()
+        glPopMatrix()
+    
+    def draw_localAxis(self):
+        localAxis = pyglet.graphics.vertex_list(6, 
+            ('v3f/static', (0.0,0,0.0,25,0,0.0,0.0,0,0.0,0.0,25, 0.0,0.0,0,0.0,0.0,0.0,25)), 
+            ('c3B/static', (255,0,0,255,0,0,0,255,0,0,255,0,0,0,255,0,0,255)))
+        glLineWidth(4)
+        localAxis.draw(GL_LINES)
+        glLineWidth(1)
     
 
-            
 # our application is created using the pygletApp class
 problem_3 = pygletApp()
 
