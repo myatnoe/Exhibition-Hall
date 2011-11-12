@@ -10,8 +10,10 @@ from models import grid,camera,draw_localAxis
 from room import Wall, Floor
 from accessory import DisplayStand
 from rubik import Rubik
+from photo import Monalisa
 import math
 from math import *
+from description import Description
 
 
 class pygletApp(pyglet.window.Window):
@@ -31,9 +33,13 @@ class pygletApp(pyglet.window.Window):
         self.wall1 = Wall(600,300)
         self.floor = Floor(600,600)
         
-        # Testing
+        # Exhibits
         self.stand = DisplayStand(20,50)
         self.rubik = Rubik()
+        self.rubik_des = Description(self, "Rubik Cube+Scale with Up & DOWN", 0,0)
+        
+        self.monalisa = Monalisa()
+        self.mona_des = Description(self, "Mona Lisa Ghost+Press 'c' to see the Ghost+Press 'x' to on/off texture")
         
         self.x_rot = self.y_rot = self.z_rot = 0
         self.scale = 1
@@ -82,6 +88,10 @@ class pygletApp(pyglet.window.Window):
         elif sym == key.DOWN:
             if self.scale > 1:
                 self.scale -= .1
+        elif sym == key.C:
+            self.monalisa.change_ghost()
+        elif sym == key.X:
+            self.monalisa.change_see()
     
     # Function that sets the camera to 3D mode           
     def on_resize(self,width, height): 
@@ -128,28 +138,39 @@ class pygletApp(pyglet.window.Window):
         self.draw_room()
         
         # Objects
+        # All objects will be 'dis' far from the center point of the room
         dis = (self.floor.width/2)*0.75
         
-        # Object 1
-        glPushMatrix()
+        # Object 1  ########### ########### ########### ########### ###########
+        glPushMatrix() # Object 1 push
         glRotatef(30,0,1,0)
         glTranslatef(dis,0,0)
-        self.stand.draw(distance)
+        self.stand.draw(distance) # Stand 1
 		
-        glPushMatrix()
+        glPushMatrix() # Rubik push
         glTranslatef(0,self.stand.height*1.5,0)
         glScalef(10*self.scale,10*self.scale,10*self.scale)
         glRotatef(self.x_rot,1,0,1)
-        self.rubik.draw()
-        glPopMatrix()
-        glPopMatrix()
+        self.rubik.draw() # Rubik cube
+        glPopMatrix() # Rubik pop
         
-        # Object 2
-        glPushMatrix()
+        glPushMatrix() # Rubik description push
+        glTranslatef(0,self.stand.height*1.5,self.stand.width*1.2)
+        glRotatef(-90,0,1,0)
+        glScalef(.2,.2,.2)
+        #self.draw_localAxis()
+        self.rubik_des.draw_description()
+        glPopMatrix() # Rubik description pop
+        glPopMatrix() # Object 1 pop
+        
+        # Object 2 ########### ########### ########### ########### ###########
+        glPushMatrix() # Object 2 push
         glRotatef(-30, 0,1,0)
         glTranslatef(dis,0,0)
         self.stand.draw(distance)
-        glPopMatrix()
+        
+        
+        glPopMatrix() # Object 2 pop
         
         glPushMatrix()
         glRotatef(-150, 0,1,0)
@@ -167,6 +188,20 @@ class pygletApp(pyglet.window.Window):
         glRotatef(-270, 0,1,0)
         glTranslatef(dis,0,0)
         self.stand.draw(distance)
+        
+        glPushMatrix() # MonaLisa push
+        glTranslatef(0,self.stand.height*2,0)
+        glRotatef(-90,0,1,0)
+        glScalef(20,20,1)
+        self.monalisa.draw() # MonaLisa
+        glPopMatrix() # MonaLisa pop
+        
+        glPushMatrix() # MonaLisa description push
+        glTranslatef(0,self.stand.height*1.5,self.stand.width*1.2)
+        glRotatef(-90,0,1,0)
+        glScalef(.2,.2,.2)
+        self.mona_des.draw_description()
+        glPopMatrix() # MonaLisa description pop
         glPopMatrix()
         
         glPopMatrix() # final POP
@@ -194,8 +229,15 @@ class pygletApp(pyglet.window.Window):
         self.wall1.draw()
         glPopMatrix() # Right Wall Pop
     
+    def draw_localAxis(self):
+        localAxis = pyglet.graphics.vertex_list(6, 
+            ('v3f/static', (0.0,0,0.0,25,0,0.0,0.0,0,0.0,0.0,25, 0.0,0.0,0,0.0,0.0,0.0,25)), 
+            ('c3B/static', (255,0,0,255,0,0,0,255,0,0,255,0,0,0,255,0,0,255)))
+        glLineWidth(4)
+        localAxis.draw(GL_LINES)
+        glLineWidth(1)
+    
 
-            
 # our application is created using the pygletApp class
 problem_3 = pygletApp()
 

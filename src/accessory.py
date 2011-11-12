@@ -56,7 +56,8 @@ class box():
     
     def draw(self):
         glPushMatrix()
-        glScalef(self.length,self.height,self.depth)
+        glTranslatef(0,self.height/2,0)
+        glScalef(self.length,self.height/2,self.depth)
         glBindTexture(GL_TEXTURE_2D, self.texture.id)
         glBegin(GL_QUADS)
         glTexCoord2f(0.0, 0.0); glVertex3f(-1, -1,  1)	# Bottom Left Of The Texture and Quad
