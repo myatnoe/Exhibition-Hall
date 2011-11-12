@@ -76,13 +76,12 @@ class pygletApp(pyglet.window.Window):
                 glDisable(GL_LIGHTING)
             else:
                 glEnable(GL_LIGHTING)
-        elif sym == key.C:
-            if mod == key.MOD_SHIFT:
-                if self.scale < 1.5:
-                    self.scale += .1
-            else:
-                if self.scale > 1:
-                    self.scale -= .1
+        elif sym == key.UP:
+            if self.scale < 1.5:
+                self.scale += .1
+        elif sym == key.DOWN:
+            if self.scale > 1:
+                self.scale -= .1
     
     # Function that sets the camera to 3D mode           
     def on_resize(self,width, height): 
