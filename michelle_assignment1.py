@@ -12,6 +12,7 @@ from objects.accessory import DisplayStand
 from objects.rubik import Rubik
 from objects.photo import Monalisa
 from objects.pumpkin import Pumpkin
+from objects.gear import Gear
 import math
 from math import *
 from objects.description import Description
@@ -19,7 +20,7 @@ from objects.description import Description
 class pygletApp(pyglet.window.Window):
     def __init__(self):
         super(pygletApp, self).__init__(width=800,height=600)
-        
+        self.set_fullscreen(True)
         self.set_exclusive_mouse(True)
         self.grid    = grid(size=300)
         self.camera  = camera(pos=(0., -100., -550.),rot=(0.,0.,0.),window=self,speed=400)
@@ -38,13 +39,16 @@ class pygletApp(pyglet.window.Window):
         self.show_des = True
         self.stand = DisplayStand(20,50)
         self.rubik = Rubik()
-        self.rubik_des = Description(self, "Rubik Cube+Scale with Up & DOWN", 0,0)
+        self.rubik_des = Description("Rubik Cube+Scale with Up & DOWN")
         
         self.monalisa = Monalisa()
-        self.mona_des = Description(self, "Mona Lisa Ghost+Press 'c' to see the Ghost+Press 'x' to on/off texture")
+        self.mona_des = Description("Mona Lisa Ghost+Press 'c' to see the Ghost+Press 'x' to on/off texture")
         
-        self.pumpkin = Pumpkin(40,40)
-        self.x_rot = self.y_rot = self.z_rot = 0
+        self.pumpkin = Pumpkin(60,60)
+        self.pumpkin_des = Description("Cinderella Carriage+'p' to rotate pumpkin on X axis+'o' to rotate wheel on Z axis+'i' to rotate the carriage on Y axis")
+        
+        self.gear = Gear()
+        self.rubik_rot = self.gear_rot = 0
         self.scale = 1
 		
 		# init
@@ -90,14 +94,20 @@ class pygletApp(pyglet.window.Window):
             if self.scale < 1.5:
                 self.scale += .1
         elif sym == key.DOWN:
-            if self.scale > 1:
+            if self.scale > .5:
                 self.scale -= .1
         elif sym == key.C:
             self.monalisa.change_ghost()
         elif sym == key.X:
             self.monalisa.change_see()
+        elif sym == key.P:
+            self.pumpkin.rotate_pumpkin()
+        elif sym == key.O:
+            self.pumpkin.rotate_wheel()
+        elif sym == key.I:
+            self.pumpkin.rotate_whole()
     
-    # Function that sets the camera to 3D mode           
+    # Function that sets the camera to 3D mode
     def on_resize(self,width, height): 
         glViewport(0, 0, self.width, self.height) 
         glMatrixMode(GL_PROJECTION) 
@@ -118,12 +128,12 @@ class pygletApp(pyglet.window.Window):
         # TODO: update
         self.stand.update()
         
-        self.x_rot += 1
-        self.x_rot %= 360
-        self.y_rot += 1
-        self.y_rot %= 360
-        self.z_rot += 1
-        self.z_rot %= 360
+        self.rubik_rot += 1
+        self.rubik_rot %= 360
+        self.gear_rot += 1
+        self.gear_rot %= 360
+        
+        self.pumpkin.update()
         
     
     # your draw function
@@ -154,7 +164,7 @@ class pygletApp(pyglet.window.Window):
         glPushMatrix() # Rubik push
         glTranslatef(0,self.stand.height*1.5,0)
         glScalef(10*self.scale,10*self.scale,10*self.scale)
-        glRotatef(self.x_rot,1,0,1)
+        glRotatef(self.rubik_rot,0,1,1)
         self.rubik.draw() # Rubik cube
         glPopMatrix() # Rubik pop
         
@@ -169,16 +179,19 @@ class pygletApp(pyglet.window.Window):
         
         ############ ########### ########### ########### ###########        
         glPushMatrix() # Pumpkin push
-        glTranslatef(-dis,self.pumpkin.height,0)
+        glRotatef(-30,0,1,0)
+        glTranslatef(-dis,self.pumpkin.height*1.5,0)
         self.pumpkin.draw() # Pumpkin cube
         glPopMatrix() # Pumpkin pop
         
         glPushMatrix() # Pumpkin description push
-        glTranslatef(0,self.stand.height*1.5,self.stand.width*1.2)
-        glRotatef(-90,0,1,0)
+        glRotatef(-30,0,1,0)
+        glTranslatef(-dis,0,0)
+        glTranslatef(0,self.pumpkin.height*1.5,-self.pumpkin.width*1.5)
+        glRotatef(90,0,1,0)
         glScalef(.2,.2,.2)
         if self.show_des:
-            self.rubik_des.draw_description()
+            self.pumpkin_des.draw_description()
         glPopMatrix() # Pumpkin description pop
         
         ############ ########### ########### ########### ###########
@@ -195,13 +208,35 @@ class pygletApp(pyglet.window.Window):
         glPopMatrix() # MonaLisa pop
         
         glPushMatrix() # MonaLisa description push
-        glTranslatef(-10,self.stand.height*1.5,self.stand.width*2)
+        glTranslatef(-10,self.stand.height*1.5,self.stand.width*2.5)
         glRotatef(-90,0,1,0)
         glScalef(.2,.2,.2)
         if self.show_des:
             self.mona_des.draw_description()
         glPopMatrix() # MonaLisa description pop
         glPopMatrix() # Mona Lisa Pop
+        
+        glPushMatrix() # Gear push
+        glTranslatef(200,200,-300+2.5)
+        self.gear.draw()
+        glPushMatrix()
+        glRotatef(self.gear_rot,0,0,1)
+        glTranslatef(40,0,0)
+        glRotatef(self.gear_rot-1.5,0,0,1)
+        self.gear.draw()
+        glPopMatrix()
+        glPopMatrix() # Gear pop
+        
+        glPushMatrix() # Gear push
+        glTranslatef(-200,200,-300+2.5)
+        self.gear.draw()
+        glPushMatrix()
+        glRotatef(-self.gear_rot,0,0,1)
+        glTranslatef(-40,0,0)
+        glRotatef(-self.gear_rot-1.5,0,0,1)
+        self.gear.draw()
+        glPopMatrix()
+        glPopMatrix() # Gear pop
         
         glPopMatrix() # final POP
     

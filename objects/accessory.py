@@ -3,6 +3,7 @@ from OpenGL.GLUT import *
 from pyglet import image
 from pyglet.gl import *
 import math
+from models import draw_localAxis
 
 class cylinder:
     def __init__(self, radius, height):

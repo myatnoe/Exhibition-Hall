@@ -1,8 +1,7 @@
 from pyglet.gl import *
 
 class Description:
-    def __init__(self,window,text='Welcome',x=0,y=0,RGB=(0,0,0)):
-        self.window = window
+    def __init__(self,text='Welcome',x=0,y=0,RGB=(0,0,0)):
         self.texts = text.split('+')
         self.x = x
         self.y = y
